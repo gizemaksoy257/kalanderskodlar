@@ -1,0 +1,191 @@
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
+
+namespace LoginUI   // Proje adın neyse burası onunla aynı olmalı
+{
+    static class Program
+    {
+        [STAThread]
+        static void Main()
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new LoginForm());
+        }
+    }
+
+    public class LoginForm : Form
+    {
+        // Kontroller
+        private Label lblTitle;
+        private Label lblUserId;
+        private Label lblPassword;
+        private TextBox txtUserId;
+        private TextBox txtPassword;
+        private Button btnNewUser;
+        private Button btnLogin;
+        private Button btnForgotPassword;
+
+        // Basit kullanıcı listesi (UserID -> Password)
+        private Dictionary<string, string> users = new Dictionary<string, string>();
+
+        public LoginForm()
+        {
+            // Form özellikleri
+            this.Text = "User Login Form";
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.ClientSize = new Size(600, 380);
+            this.BackColor = Color.LightGray;
+            this.Font = new Font("Segoe UI", 11);
+
+            InitializeControls();
+
+            // Varsayılan bir kullanıcı
+            users["admin"] = "1234";
+
+            // Enter tuşu Login butonunu tetiklesin
+            this.AcceptButton = btnLogin;
+        }
+
+        private void InitializeControls()
+        {
+            // Başlık
+            lblTitle = new Label();
+            lblTitle.Text = "User Login Form";
+            lblTitle.Font = new Font("Segoe UI", 20, FontStyle.Bold);
+            lblTitle.AutoSize = true;
+            lblTitle.Location = new Point(180, 40);
+
+            // User ID
+            lblUserId = new Label();
+            lblUserId.Text = "User ID";
+            lblUserId.AutoSize = true;
+            lblUserId.Location = new Point(120, 120);
+
+            txtUserId = new TextBox();
+            txtUserId.Location = new Point(250, 115);
+            txtUserId.Size = new Size(220, 30);
+
+            // Password
+            lblPassword = new Label();
+            lblPassword.Text = "Password";
+            lblPassword.AutoSize = true;
+            lblPassword.Location = new Point(120, 170);
+
+            txtPassword = new TextBox();
+            txtPassword.Location = new Point(250, 165);
+            txtPassword.Size = new Size(220, 30);
+            txtPassword.PasswordChar = '*';
+
+            // Forgot Password
+            btnForgotPassword = new Button();
+            btnForgotPassword.Text = "Forgot Password ?";
+            btnForgotPassword.Size = new Size(180, 30);
+            btnForgotPassword.Location = new Point(290, 215);
+            btnForgotPassword.Click += BtnForgotPassword_Click;
+
+            // New User
+            btnNewUser = new Button();
+            btnNewUser.Text = "New User";
+            btnNewUser.Size = new Size(180, 60);
+            btnNewUser.Location = new Point(100, 260);
+            btnNewUser.Font = new Font("Segoe UI", 14, FontStyle.Italic);
+            btnNewUser.Click += BtnNewUser_Click;
+
+            // Login
+            btnLogin = new Button();
+            btnLogin.Text = "Login";
+            btnLogin.Size = new Size(180, 60);
+            btnLogin.Location = new Point(320, 260);
+            btnLogin.Font = new Font("Segoe UI", 14, FontStyle.Italic);
+            btnLogin.Click += BtnLogin_Click;
+
+            // Forma ekle
+            this.Controls.Add(lblTitle);
+            this.Controls.Add(lblUserId);
+            this.Controls.Add(txtUserId);
+            this.Controls.Add(lblPassword);
+            this.Controls.Add(txtPassword);
+            this.Controls.Add(btnForgotPassword);
+            this.Controls.Add(btnNewUser);
+            this.Controls.Add(btnLogin);
+        }
+
+        // LOGIN
+        private void BtnLogin_Click(object sender, EventArgs e)
+        {
+            string id = txtUserId.Text.Trim();
+            string pw = txtPassword.Text;
+
+            if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(pw))
+            {
+                MessageBox.Show("Lütfen User ID ve Password alanlarını doldurun.",
+                    "Uyarı", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (users.TryGetValue(id, out string storedPw) && storedPw == pw)
+            {
+                MessageBox.Show("Giriş başarılı, hoş geldin " + id + "!",
+                    "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("User ID veya Password hatalı.",
+                    "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // NEW USER
+        private void BtnNewUser_Click(object sender, EventArgs e)
+        {
+            string newId = txtUserId.Text.Trim();
+            string newPw = txtPassword.Text;
+
+            if (string.IsNullOrWhiteSpace(newId) || string.IsNullOrWhiteSpace(newPw))
+            {
+                MessageBox.Show("Yeni kullanıcı oluşturmak için User ID ve Password girin.",
+                    "Uyarı", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (users.ContainsKey(newId))
+            {
+                MessageBox.Show("Bu User ID zaten kayıtlı. Farklı bir isim deneyin.",
+                    "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                users.Add(newId, newPw);
+                MessageBox.Show("Yeni kullanıcı başarıyla oluşturuldu.",
+                    "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        // FORGOT PASSWORD
+        private void BtnForgotPassword_Click(object sender, EventArgs e)
+        {
+            string id = txtUserId.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                MessageBox.Show("Lütfen önce User ID alanına kullanıcı adınızı yazın.",
+                    "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (users.TryGetValue(id, out string storedPw))
+            {
+                MessageBox.Show($"Kullanıcı: {id}\nŞifreniz: {storedPw}",
+                    "Şifre Hatırlatma", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("Bu User ID ile kayıtlı kullanıcı bulunamadı.",
+                    "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+    }
+}
